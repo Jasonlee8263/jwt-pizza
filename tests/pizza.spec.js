@@ -172,6 +172,13 @@ test('history', async ({page})=> {
 })
 
 test('adminDashboard', async ({page})=> {
+  await page.route('*/**/api/auth', async (route) => {
+    const loginReq = { email: 'qdy460g53o@admin.com', password: 'toomanysecrets' };
+    const loginRes = { user: { id: 3, name: 'Kai Chen', email: 'qdy460g53o@admin.com', roles: [{ role: 'admin' }] }, token: 'abcdef' };
+    expect(route.request().method()).toBe('PUT');
+    expect(route.request().postDataJSON()).toMatchObject(loginReq);
+    await route.fulfill({ json: loginRes });
+  });
   await page.goto("/");
   await page.getByRole('link', { name: 'Login' }).click();
   await page.getByPlaceholder('Email address').click();
