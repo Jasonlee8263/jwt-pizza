@@ -98,13 +98,20 @@ test('purchase with login', async ({ page }) => {
   await expect(page.getByText('0.008')).toBeVisible();
 });
 test("register", async ({ page }) => {
+  await page.route('*/**/api/auth', async (route) => {
+    const registerReq = { name:'test1', email: 'test@jwt.com', password: 'a' };
+    const registerRes = { user: { id: 3, name: 'test1', email: 'test@jwt.com', roles: [{ role: 'diner' }] }, token: 'abcdef' };
+    expect(route.request().method()).toBe('POST');
+    expect(route.request().postDataJSON()).toMatchObject(registerReq);
+    await route.fulfill({ json: registerRes });
+  });
   await page.goto("/");
   await page.getByRole("link", { name: "Register" }).click();
-  await page.getByPlaceholder("Full name").fill("test");
+  await page.getByPlaceholder("Full name").fill("test1");
   await page.getByPlaceholder("Full name").press("Tab");
-  await page.getByPlaceholder("Email address").fill("test@test.com");
+  await page.getByPlaceholder("Email address").fill("test@jwt.com");
   await page.getByPlaceholder("Password").click();
-  await page.getByPlaceholder("Password").fill("test");
+  await page.getByPlaceholder("Password").fill("a");
   await page.getByRole("button", { name: "Register" }).click();
   await expect(page.getByRole("heading")).toContainText("The web's best pizza");
   await expect(page.locator("#navbar-dark")).toContainText("Logout");
