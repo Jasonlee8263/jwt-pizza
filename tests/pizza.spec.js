@@ -62,29 +62,53 @@ test("purchase with login", async ({ page }) => {
   });
 
   await page.route("*/**/api/order", async (route) => {
-    const orderReq = {
-      items: [
-        { menuId: 1, description: "Veggie", price: 0.0038 },
-        { menuId: 2, description: "Pepperoni", price: 0.0042 },
-      ],
-      storeId: "4",
-      franchiseId: 2,
-    };
-    const orderRes = {
-      order: {
+    if(route.request().method()==="POST"){
+      const orderReq = {
         items: [
           { menuId: 1, description: "Veggie", price: 0.0038 },
           { menuId: 2, description: "Pepperoni", price: 0.0042 },
         ],
         storeId: "4",
         franchiseId: 2,
-        id: 23,
-      },
-      jwt: "eyJpYXQ",
-    };
-    expect(route.request().method()).toBe("POST");
-    expect(route.request().postDataJSON()).toMatchObject(orderReq);
-    await route.fulfill({ json: orderRes });
+      };
+      const orderRes = {
+        order: {
+          items: [
+            { menuId: 1, description: "Veggie", price: 0.0038 },
+            { menuId: 2, description: "Pepperoni", price: 0.0042 },
+          ],
+          storeId: "4",
+          franchiseId: 2,
+          id: 23,
+        },
+        jwt: "eyJpYXQ",
+      };
+      expect(route.request().postDataJSON()).toMatchObject(orderReq);
+      await route.fulfill({ json: orderRes });
+    }
+    else if(route.request().method()==="GET") {
+      const orderRes = {
+        dinerId: 4,
+        orders: [
+          {
+            id: 1,
+            franchiseId: 1,
+            storeId: 1,
+            date: "2024-06-05T05:14:40.000Z",
+            items: [
+              {
+                id: 1,
+                menuId: 1,
+                description: "Veggie",
+                price: 0.05
+              }
+            ]
+          }
+        ],
+        page: 1
+      }
+      await route.fulfill({ json: orderRes });
+    }
   });
 
   await page.goto("/");
@@ -118,6 +142,7 @@ test("purchase with login", async ({ page }) => {
 
   // Check balance
   await expect(page.getByText("0.008")).toBeVisible();
+  await page.goto('http://localhost:5173/diner-dashboard');
 });
 test("register", async ({ page }) => {
   await page.route("*/**/api/auth", async (route) => {
