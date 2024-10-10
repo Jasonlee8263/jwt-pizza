@@ -177,7 +177,8 @@ test("franchise", async ({ page }) => {
 
 test("logout", async ({ page }) => {
   await page.route("*/**/api/auth", async (route) => {
-    const loginReq = { email: "d@jwt.com", password: "a" };
+    if (route.request().method() === "PUT") {
+      const loginReq = { email: "d@jwt.com", password: "a" };
     const loginRes = {
       user: {
         id: 3,
@@ -187,9 +188,16 @@ test("logout", async ({ page }) => {
       },
       token: "abcdef",
     };
-    expect(route.request().method()).toBe("PUT");
     expect(route.request().postDataJSON()).toMatchObject(loginReq);
     await route.fulfill({ json: loginRes });
+    }
+    else if(route.request().method() === "DELETE") {
+      const logoutRes = {
+        message: "logout successful",
+      };
+      expect(route.request().method()).toBe("DELETE");
+      await route.fulfill({ json: logoutRes });
+    }
   });
   await page.goto("/");
   //Login
@@ -200,14 +208,7 @@ test("logout", async ({ page }) => {
   await page.getByPlaceholder("Password").fill("a");
   await page.getByRole("button", { name: "Login" }).click();
   //Logout
-  await page.route("*/**/api/auth", async (route) => {
-    const logoutRes = {
-      message: "logout successful",
-    };
-    // expect(route.request().postDataJSON()).toMatchObject(logoutReq);
-    expect(route.request().method()).toBe("DELETE");
-    await route.fulfill({ json: logoutRes });
-  });
+  
   await page.getByRole("link", { name: "Logout" }).click();
 });
 
