@@ -494,6 +494,8 @@ test("diner dashboard" ,async ({page})=> {
   await page.getByPlaceholder("Password").fill("a");
   await page.getByRole("button", { name: "Login" }).click();
   await page.goto('http://localhost:5173/diner-dashboard');
+  // await page.getByText('Here is your history of all').click();
+  await expect(page.getByRole('main')).toContainText('Here is your history of all the good times.');
 })
 
 // test("should show NotFound if user is not present", async ({ page }) => {
