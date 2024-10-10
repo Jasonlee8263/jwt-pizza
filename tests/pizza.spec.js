@@ -414,11 +414,33 @@ test("not found", async ({ page }) => {
   await expect(page.getByRole("heading")).toContainText("Oops");
 });
 
-test("docs", async ({ page }) => {
-  await page.goto("http://localhost:5173/docs");
-  await expect(page.getByRole("main")).toContainText("JWT Pizza API");
-});
 
+test('docs page loads and displays API documentation', async ({ page }) => {
+  // Navigate to the documentation page
+  await page.goto('http://localhost:5173/docs');
+
+  // Check that the page contains the main title
+  await expect(page.getByRole('main')).toContainText('JWT Pizza API');
+
+  // Verify that at least one API endpoint is displayed
+  const apiEndpointTitle = await page.locator('h2');
+  await expect(apiEndpointTitle).toHaveCount(15); // Adjust count based on expected number of endpoints
+
+  // Verify the example request and response for the first endpoint
+  const exampleRequest = await page.locator('div:has-text("Example request") ~ div').first();
+  await expect(exampleRequest).not.toBeEmpty();
+
+  const response = await page.locator('pre').first();
+  await expect(response).not.toBeEmpty();
+
+  // Verify that service URLs are correctly rendered in the footer
+  const apiLinks = await page.locator('a.hover\\:underline');
+  await expect(apiLinks).toHaveCount(2); // Adjust based on the number of APIs
+});
+// test("docs", async ({ page }) => {
+//   await page.goto("http://localhost:5173/docs");
+//   await expect(page.getByRole("main")).toContainText("JWT Pizza API");
+// });
 test("diner dashboard" ,async ({page})=> {
   await page.route("*/**/api/auth", async (route) => {
     const loginReq = { email: "d@jwt.com", password: "a" };
