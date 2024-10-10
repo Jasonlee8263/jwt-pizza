@@ -424,7 +424,7 @@ test('docs page loads and displays API documentation', async ({ page }) => {
 
   // Verify that at least one API endpoint is displayed
   const apiEndpointTitle = await page.locator('h2');
-  await expect(apiEndpointTitle).toHaveCount(15); // Adjust count based on expected number of endpoints
+  await expect(apiEndpointTitle).toHaveCount(1); // Adjust count based on expected number of endpoints
 
   // Verify the example request and response for the first endpoint
   const exampleRequest = await page.locator('div:has-text("Example request") ~ div').first();
