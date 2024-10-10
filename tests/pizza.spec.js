@@ -406,7 +406,11 @@ test("franchiseDashboard", async ({ page }) => {
 });
 
 test("not found", async ({ page }) => {
-  await page.goto("http://localhost:5173/haha");
+  await page.route("*/**/api/auth", async (route) => {
+    await route.fulfill({ json: null });
+  });
+  // await page.goto("http://localhost:5173/haha");
+  await page.goto('http://localhost:5173/diner-dashboard');
   await expect(page.getByRole("heading")).toContainText("Oops");
 });
 
@@ -491,3 +495,16 @@ test("diner dashboard" ,async ({page})=> {
   await page.getByRole("button", { name: "Login" }).click();
   await page.goto('http://localhost:5173/diner-dashboard');
 })
+
+// test("should show NotFound if user is not present", async ({ page }) => {
+//   // 로그인 요청을 가로채지 않아서 user가 null인 상태를 시뮬레이션
+//   await page.route("*/**/api/auth", async (route) => {
+//     await route.fulfill({ json: null });
+//   });
+
+//   await page.goto('http://localhost:5173/diner-dashboard');
+
+//   // NotFound 컴포넌트가 렌더링되는지 확인
+//   const notFoundText = await page.locator("text=Not Found").isVisible();
+//   expect(notFoundText).toBeTruthy();
+// });
