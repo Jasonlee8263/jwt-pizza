@@ -142,7 +142,6 @@ test("purchase with login", async ({ page }) => {
 
   // Check balance
   await expect(page.getByText("0.008")).toBeVisible();
-  await page.goto('http://localhost:5173/diner-dashboard');
 });
 test("register", async ({ page }) => {
   await page.route("*/**/api/auth", async (route) => {
@@ -415,3 +414,80 @@ test("docs", async ({ page }) => {
   await page.goto("http://localhost:5173/docs");
   await expect(page.getByRole("main")).toContainText("JWT Pizza API");
 });
+
+test("diner dashboard" ,async ({page})=> {
+  await page.route("*/**/api/auth", async (route) => {
+    const loginReq = { email: "d@jwt.com", password: "a" };
+    const loginRes = {
+      user: {
+        id: 3,
+        name: "Kai Chen",
+        email: "d@jwt.com",
+        roles: [{ role: "diner" }],
+      },
+      token: "abcdef",
+    };
+    expect(route.request().method()).toBe("PUT");
+    expect(route.request().postDataJSON()).toMatchObject(loginReq);
+    await route.fulfill({ json: loginRes });
+  });
+
+  await page.route("*/**/api/order", async (route) => {
+    if(route.request().method()==="POST"){
+      const orderReq = {
+        items: [
+          { menuId: 1, description: "Veggie", price: 0.0038 },
+          { menuId: 2, description: "Pepperoni", price: 0.0042 },
+        ],
+        storeId: "4",
+        franchiseId: 2,
+      };
+      const orderRes = {
+        order: {
+          items: [
+            { menuId: 1, description: "Veggie", price: 0.0038 },
+            { menuId: 2, description: "Pepperoni", price: 0.0042 },
+          ],
+          storeId: "4",
+          franchiseId: 2,
+          id: 23,
+        },
+        jwt: "eyJpYXQ",
+      };
+      expect(route.request().postDataJSON()).toMatchObject(orderReq);
+      await route.fulfill({ json: orderRes });
+    }
+    else if(route.request().method()==="GET") {
+      const orderRes = {
+        dinerId: 4,
+        orders: [
+          {
+            id: 1,
+            franchiseId: 1,
+            storeId: 1,
+            date: "2024-06-05T05:14:40.000Z",
+            items: [
+              {
+                id: 1,
+                menuId: 1,
+                description: "Veggie",
+                price: 0.05
+              }
+            ]
+          }
+        ],
+        page: 1
+      }
+      await route.fulfill({ json: orderRes });
+    }
+  });
+  // Login
+  await page.goto('http://localhost:5173')
+  await page.getByText("Login").click();
+  await page.getByPlaceholder("Email address").click();
+  await page.getByPlaceholder("Email address").fill("d@jwt.com");
+  await page.getByPlaceholder("Email address").press("Tab");
+  await page.getByPlaceholder("Password").fill("a");
+  await page.getByRole("button", { name: "Login" }).click();
+  await page.goto('http://localhost:5173/diner-dashboard');
+})
