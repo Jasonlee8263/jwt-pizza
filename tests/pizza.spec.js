@@ -508,5 +508,5 @@ test("diner dashboard" ,async ({page})=> {
 
 //   // NotFound 컴포넌트가 렌더링되는지 확인
 //   const notFoundText = await page.locator("text=Not Found").isVisible();
-//   expect(notFoundText).toBeTruthy();
+//   expect(notFoundText).toBeTruthy();.
 // });
